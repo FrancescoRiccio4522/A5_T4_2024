@@ -1,9 +1,8 @@
-# Task 11 - Gruppo 41
+# Task 4 - Gruppo A3
 Componenti:
-- Luigi Cecere - M63/1413
-- Chiara Capocello - M63/1451
-- Giovanni Gentile - M63/1450
-- Michelangelo Formato - M63/1519
+- Valerio Domenico Conte - M63001606
+- Nike Di Giacomo - M63001641
+- Alessandro Falino - M63001658
 
 # GUIDA ALL'INSTALLAZIONE
 
@@ -37,7 +36,7 @@ Per fare ciò bisogna fare le seguenti operazioni:
         db.interaction.createIndex({ name: "text" })
         db.Admin.createIndex({username: 1})
 
-L'intera applicazione è adesso pienamente configurata e raggiungibile sulla porta :80. Per una guida all'installazione e all'utilizzo più completa consultare la documentazione al capitolo 8.
+L'intera applicazione è adesso pienamente configurata e raggiungibile sulla porta :80. Per una guida all'installazione e all'utilizzo più completa consultare la documentazione al capitolo 5.
 
 # VIDEO DIMOSTRAZIONE
 ## Admin

@@ -11,38 +11,47 @@ import java.util.ArrayList;
 @Controller
 public class FileController {
     private ArrayList<String> Class = new ArrayList<>();
-    
-public void listFilesInFolder(String folderPath) {
-    try {
-        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        Resource[] resources = resolver.getResources("file:" + folderPath + "/*");
-        for (Resource resource : resources) {
-            if (resource.isFile()) {
-                //gestisco il nome del file eliminando l'estensione
-                String fileName = resource.getFilename();
-                int extensionIndex = fileName.lastIndexOf('.');
-                if (extensionIndex > 0) {
-                    String fileNameWithoutExtension = fileName.substring(0, extensionIndex);
-                    //verifico che la classe non sia già stata inserita
-                    if (!Class.contains(fileNameWithoutExtension)) {
-                        Class.add(fileNameWithoutExtension);
-                        System.out.println(fileNameWithoutExtension);
+
+    public void listFilesInFolder(String folderPath) {
+        try {
+            ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+            Resource[] resources = resolver.getResources("file:" + folderPath + "/*");
+
+            for (Resource resource : resources) {
+                if (resource.isFile()) {
+                    // gestisco il nome del file eliminando l'estensione
+                    String fileName = resource.getFilename();
+
+                    if (fileName != null) {
+                        int extensionIndex = fileName.lastIndexOf('.');
+
+                        if (extensionIndex > 0) {
+                            String fileNameWithoutExtension = fileName.substring(0, extensionIndex);
+                            
+                            // verifico che la classe non sia già stata inserita
+                            if (!Class.contains(fileNameWithoutExtension)) {
+                                Class.add(fileNameWithoutExtension);
+
+                                System.out.println(fileNameWithoutExtension);
+                            }
+                        }
+                    } else {
+                        System.out.println("Attenzione: la risorsa non ha un filename.");
                     }
                 }
             }
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-    } catch (IOException e) {
-        e.printStackTrace();
     }
+
+    public int getClassSize() {
+        return Class.size();
+    }
+
+    public String getClass(int i) {
+        return Class.get(i);
+    }
+
 }
-
-
-     
-
-    public int getClassSize() { return Class.size(); }
-
-    public String getClass(int i) { return Class.get(i); }
-
-}
-

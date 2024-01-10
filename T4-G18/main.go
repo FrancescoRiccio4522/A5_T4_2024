@@ -79,6 +79,38 @@ func main() {
 	if err := run(ctx, configuration); err != nil {
 		log.Fatal(err)
 	}
+
+	//A3
+	// Inizializza la connessioen al DB
+	db, err := gorm.Open(postgres.Open(configuration.PostgresUrl), &gorm.Config{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Stabilisce quali dati prendere dal DB (servono ID, Name, ecc... dal file system)
+	savedData := &model.Game{
+		ID:         1,          //TODO Rimpiazzare con il vero ID
+		Name:       "GameName", //TODO Rimpiazzare con il vero nome
+		Difficulty: "Easy",     //TODO Rimpiazzare con la vero difficoltà
+		//TODO Aggiungere altri campi se necessario
+	}
+
+	// Prende i dati dal DB in base all'id
+	databaseData, err := getGameDataFromDatabase(db, savedData.ID)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Confrontiamo i dati
+	match := compareGameData(savedData, databaseData)
+	if match {
+		fmt.Println("I dati sono uguali!")
+	} else {
+		fmt.Println("I dati NON sono uguali.")
+		//TODO caricare nel DB il più recente
+	}
+	//FINE A3
+
 }
 
 func run(ctx context.Context, c Configuration) error {
@@ -390,3 +422,23 @@ func setupRoutes(gc *game.Controller, rc *round.Controller, tc *turn.Controller,
 
 	return r
 }
+
+// A3
+
+// Questa funzione recupera i dati dal DB in base all'ID della partita
+func getGameDataFromDatabase(db *gorm.DB, gameID int64) (*model.Game, error) {
+	var game model.Game
+	if err := db.First(&game, gameID).Error; err != nil {
+		return nil, err
+	}
+	return &game, nil
+}
+
+// Questa funzione compara i dati dal DB (T4) con i dati nel file system 
+func compareGameData(savedData *model.Game, databaseData *model.Game) bool {
+	// Compare relevant fields
+	return savedData.Name == databaseData.Name &&
+		savedData.Difficulty == databaseData.Difficulty // Add more comparisons as needed
+}
+
+// FINE A3

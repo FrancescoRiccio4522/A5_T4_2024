@@ -8,21 +8,33 @@ import (
 )
 
 type Game struct {
-	ID           int64      `json:"id"`
-	CurrentRound int        `json:"currentRound"`
-	Description  string     `json:"description"`
-	Difficulty   string     `json:"difficulty"`
-	CreatedAt    time.Time  `json:"createdAt"`
-	UpdatedAt    time.Time  `json:"updatedAt"`
-	StartedAt    *time.Time `json:"startedAt"`
-	ClosedAt     *time.Time `json:"closedAt"`
-	Name         string     `json:"name"`
-	Players      []Player   `json:"players,omitempty"`
+	ID          int64      `json:"id"`
+	Name        string     `json:"name"`
+	Round       int        `json:"round"` 
+	Class       string     `json:"class"`
+	Description string     `json:"description"`
+	Difficulty  string     `json:"difficulty"`
+	CreatedAt   time.Time  `json:"createdAt"`
+	UpdatedAt   time.Time  `json:"updatedAt"`
+	StartedAt   *time.Time `json:"startedAt"`
+	ClosedAt    *time.Time `json:"closedAt"`
+	Players     []Player   `json:"players,omitempty"`
+	Robot       int64      `json:"robot,omitempty"`
 }
 
 type Player struct {
 	ID        int64  `json:"id"`
 	AccountID string `json:"accountId"`
+}
+
+type Robot struct {
+	ID          int64     `json:"id"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+	TestClassId string    `json:"testClassId"`
+	Scores      string    `json:"scores"`
+	Difficulty  string    `json:"difficulty"`
+	Type        int8      `json:"name"`
 }
 
 type CreateRequest struct {
@@ -81,20 +93,22 @@ func (AccountIdType) Parse(s string) (AccountIdType, error) {
 func (a AccountIdType) AsString() string {
 	return string(a)
 }
+
 func fromModel(g *model.Game) Game {
 	return Game{
-		ID:           g.ID,
-		CurrentRound: g.CurrentRound,
-		Difficulty:   g.Difficulty,
-		Description:  g.Description.String,
-		CreatedAt:    g.CreatedAt,
-		UpdatedAt:    g.UpdatedAt,
-		Name:         g.Name,
-		StartedAt:    g.StartedAt,
-		ClosedAt:     g.ClosedAt,
-		Players:      parsePlayers(g.Players),
+		ID:          g.ID,
+		Name:        g.Name,
+		Round:       g.Round, // GRUPPO A3
+		Class:       g.Class,
+		Description: g.Description.String,
+		Difficulty:  g.Difficulty,
+		CreatedAt:   g.CreatedAt,
+		UpdatedAt:   g.UpdatedAt,
+		StartedAt:   g.StartedAt,
+		ClosedAt:    g.ClosedAt,
+		Players:     parsePlayers(g.Players),
+		Robot:       g.Robot,
 	}
-
 }
 
 func parsePlayers(players []model.Player) []Player {
@@ -107,3 +121,14 @@ func parsePlayers(players []model.Player) []Player {
 	}
 	return res
 }
+
+/*
+func parseRobot(robot model.Robot) Robot {
+	rob := Robot{
+		ID: robot.ID,
+		//aggiungi altri campi
+	}
+
+	return rob
+}
+*/

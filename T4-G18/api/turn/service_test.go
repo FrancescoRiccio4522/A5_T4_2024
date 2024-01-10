@@ -86,6 +86,9 @@ func (suite *RepositorySuite) SeedTestData() {
 	// Create a test game
 	game := model.Game{
 		Name: "Test Game",
+
+		/* Futura implementazione di più rounds
+		**
 		Rounds: []model.Round{
 			{
 				Order:       1,
@@ -100,6 +103,7 @@ func (suite *RepositorySuite) SeedTestData() {
 			},
 			// Add more rounds as needed
 		},
+		*/
 	}
 
 	// Create a player

@@ -1,7 +1,7 @@
 package round
 
 import (
-	"errors"
+	//"errors"
 
 	"github.com/alarmfox/game-repository/api"
 	"github.com/alarmfox/game-repository/model"
@@ -24,22 +24,22 @@ func (rs *Repository) Create(r *CreateRequest) (Round, error) {
 
 	err := rs.db.Transaction(func(tx *gorm.DB) error {
 
+		/*
 		var lastRound model.Round
 		err := tx.Where(&model.Round{GameID: r.GameId}).
-			Order("\"order\" desc").
 			Last(&lastRound).
 			Error
 
-		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+				if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
+		*/
 
 		round = model.Round{
 			GameID:      r.GameId,
 			TestClassId: r.TestClassId,
 			StartedAt:   r.StartedAt,
 			ClosedAt:    r.ClosedAt,
-			Order:       lastRound.Order + 1,
 		}
 
 		return tx.Create(&round).Error
@@ -79,7 +79,6 @@ func (rs *Repository) FindByGame(id int64) ([]Round, error) {
 
 	err := rs.db.
 		Where(&model.Round{GameID: id}).
-		Order("\"order\" asc").
 		Find(&rounds).
 		Error
 
@@ -108,8 +107,6 @@ func (rs *Repository) Delete(id int64) error {
 		err := rs.db.
 			Model(&model.Round{}).
 			Where(&model.Round{GameID: round.GameID}).
-			Where("\"order\" > ?", round.Order).
-			UpdateColumn("order", gorm.Expr("\"order\" - ?", 1)).
 			Error
 
 		return err

@@ -93,6 +93,11 @@ public class HomeController {
 		return "uploadClasse";
 	}
 
+	@GetMapping("/uploadClasseAndTest")
+	public String showUploadClasseAndTest() {
+		return "uploadClasseAndTest";
+	}
+
 	@GetMapping("/reportClasse")
 	public String showReportClasse() {
 		return "reportClasse";
@@ -268,35 +273,111 @@ public class HomeController {
 		return repo.save(classe);
 	}
 
+	/**
+	 * @param classFile     file inviato come parte della richiesta multipart
+	 *                      L'interfaccia MultipartFile fornisce i metodi per
+	 *                      accedere ai dati del file che nel nostro caso sono i
+	 *                      parametri descrittivi della classe ovvero difficoltà,
+	 *                      data di caricamento ecc
+	 * @param model 		stringa che rappresenta la struttura dati ClasseUT che 
+	 * 						immagazzina le infromazioni sulla classe
+	 * @throws IOException
+	 */
 	@PostMapping("/uploadFile")
 	@ResponseBody
-	public ResponseEntity<FileUploadResponse> uploadFile(@RequestParam("file") MultipartFile multipartFile,@RequestParam("model") String model) throws IOException
+	public ResponseEntity<FileUploadResponse> uploadFile(@RequestParam("file") MultipartFile classFile, @RequestParam("model") String model) throws IOException
 	{
+		//Legge i metadati della classe della parte "model" del body HTTP e li salva in un oggetto ClasseUT
 		ObjectMapper mapper = new ObjectMapper();
 		ClassUT classe = mapper.readValue(model, ClassUT.class);
 		
-		String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
-		long size = multipartFile.getSize();
+		//Salva il nome del file caricato
+		String fileName = StringUtils.cleanPath(classFile.getOriginalFilename());
+		long size = classFile.getSize();
 		
-		FileUploadUtil.saveCLassFile(fileName, classe.getName(), multipartFile);
+		//Salva la classe nel filesystem condiviso
+		FileUploadUtil.saveCLassFile(fileName, classe.getName(), classFile);
 		
-		RobotUtil.generateAndSaveRobots(fileName, classe.getName(), multipartFile);
-
+		//Genera e salva i test nel filesystem condiviso
+		RobotUtil.generateAndSaveRobots(fileName, classe.getName(), classFile);
+		
+		//Prepara la risposta per il front-end
 		FileUploadResponse response = new FileUploadResponse();
 		response.setFileName(fileName);
 		response.setSize(size);
 		response.setDownloadUri("/downloadFile");
 		
+		//Setta data di caricamento e percorso di download 
 		classe.setUri("Files-Upload/"+classe.getName()+"/"+fileName);
 		classe.setDate(today.toString());
+
+		//Creazione dell'oggetto riguardante l'operazione appena fatta
 		LocalDate currentDate = LocalDate.now();
 	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         String data = currentDate.format(formatter);
         Operation operation1= new Operation((int)orepo.count(),userAdmin.getUsername(),classe.getName(),0,data);
+
+		//Salva i dati sull'operazione fatta nel database
         orepo.save(operation1);
+		//Salva i dati sullla classe nel database
 		repo.save(classe);
 		return new ResponseEntity<>(response,HttpStatus.OK);
 	}
+
+	/**
+	 * @param classFile     file della classe inviato come parte della richiesta POST
+	 *                      L'interfaccia MultipartFile fornisce i metodi per
+	 *                      accedere ai dati del file che nel nostro caso sono i
+	 *                      parametri descrittivi della classe ovvero difficoltà,
+	 *                      data di caricamento ecc
+	 * @param model 		stringa che rappresenta la struttura dati ClasseUT che 
+	 * 						immagazzina le infromazioni sulla classe
+	 * @param testFile      file dei test inviato come parte della richiesta POST
+	 * @throws IOException
+	 */
+	@PostMapping("/uploadTest")
+    @ResponseBody
+    public ResponseEntity<FileUploadResponse> uploadTest(@RequestParam("file") MultipartFile classFile, @RequestParam("model") String model, @RequestParam("test") MultipartFile testFile,
+	
+															@RequestParam("testEvo") MultipartFile testFileEvo) throws IOException {
+        
+        //Legge i metadati della classe della parte "model" del body HTTP e li salva in un oggetto ClasseUT
+        ObjectMapper mapper = new ObjectMapper();
+        ClassUT classe = mapper.readValue(model, ClassUT.class);
+        
+        //Salva il nome del file della classe caricato
+        String fileNameClass = StringUtils.cleanPath(classFile.getOriginalFilename());
+        long size = classFile.getSize();
+        
+        //Salva la classe nel filesystem condiviso
+        FileUploadUtil.saveCLassFile(fileNameClass, classe.getName(), classFile);
+        
+        //Salva i test nel filesystem condiviso
+        String fileNameTest = StringUtils.cleanPath(testFile.getOriginalFilename());
+		String fileNameTestEvo = StringUtils.cleanPath(testFileEvo.getOriginalFilename());
+        RobotUtil.saveRobots(fileNameClass, fileNameTest,fileNameTestEvo , classe.getName(), classFile ,testFile, testFileEvo);
+
+        FileUploadResponse response = new FileUploadResponse();
+        response.setFileName(fileNameClass);
+        response.setSize(size);
+        response.setDownloadUri("/downloadFile");
+
+        //Setta data di caricamento e percorso di download della classe
+        classe.setUri("Files-Upload/" + classe.getName() + "/" + fileNameClass);
+        classe.setDate(today.toString());
+        
+        //Creazione dell'oggetto riguardante l'operazione appena fatta
+        LocalDate currentDate = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String data = currentDate.format(formatter);
+        Operation operation1 = new Operation((int) orepo.count(), userAdmin.getUsername(), classe.getName() + " con Robot", 0, data);
+
+        //Salva i dati sull'operazione fatta nel database
+        orepo.save(operation1);
+        //Salva i dati sulla classe nel database
+        repo.save(classe);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 	
 	@PostMapping("/delete/{name}")
 	@ResponseBody

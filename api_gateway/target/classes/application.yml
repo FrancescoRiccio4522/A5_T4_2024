@@ -30,6 +30,10 @@ zuul:
       sensitiveHeaders:
       path: /api/save-data/**
       url: http://t5-app-1:8080/save-data
+    updateData-service:
+      sensitiveHeaders:
+      path: /api/update-data/**
+      url: http://t5-app-1:8080/update-data
     downloadFile-service:
       sensitiveHeaders:
       path: /api/downloadFile/**

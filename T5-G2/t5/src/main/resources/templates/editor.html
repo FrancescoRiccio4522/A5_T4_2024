@@ -819,19 +819,15 @@ public class TestClasse {
                   //console.log(localStorage.getItem("turnId"));
 
                   $.ajax({
-                    url:'http://localhost/api/save-data',
+                    url:'http://localhost/api/update-data',
                     data: {
                       playerId: parseJwt(getCookie("jwt")).userId,
-                      classe: localStorage.getItem("classe"),
-                      robot: localStorage.getItem("robot"),
-                      difficulty: localStorage.getItem("difficulty")
+                      turnID: turno + 1
                     },
                     type:'POST',
                     success: function (response) {
                       // Gestisci la risposta del server qui
-                      localStorage.setItem("gameId", response.game_id);
                       localStorage.setItem("turnId", response.turn_id);
-                      localStorage.setItem("roundId", response.round_id);
                       console.log(localStorage.getItem("turnId"));
                       turno++; // incremento il numero di turno giocati fino ad ora
                       //window.location.href = "/editor";

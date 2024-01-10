@@ -173,13 +173,13 @@ a:hover {
   </div>
 
   <div class="form-group mt-3">
-    <label class="mr-2">Upload your file (.java) :</label>
+    <label class="mr-2">Upload your class (.java) :</label>
     <input type="file" name="file" id="fileInput">
   </div>
-
-  <div class="col-12">
-    <button type="button" onclick="uploadFile()" class="btn btn-success">Upload</button>
+  <div class="form-group mt-3">
+    <button type="button" onclick="uploadFile()" class="btn btn-success">Upload class</button>
   </div>
+
 </form>
 
   </div>
@@ -211,11 +211,13 @@ a:hover {
 
 
 <script>
+//Si aggancia al form tramite ID
 const form = document.getElementById('formId');
 
-
+//Funzione per l'upload della classe e generazione dei test
 function uploadFile(event) {
   
+  //Creazione delle costanti che rappresentano i dati input al form
   const name = document.getElementById('className').value;
   const date = document.getElementById('date').value;
   const difficulty = document.getElementById('difficulty').value;
@@ -227,9 +229,11 @@ function uploadFile(event) {
     document.getElementById('category3').value
   ];
 
+  //Costante che rappresenta il file .java in input
   const fileInput = document.getElementById('fileInput');
   const file = fileInput.files[0];
 
+  //Costante che rappresenta l'insieme dei dati del form e il file in input
   const formData = new FormData();
   formData.append('file', file);
   formData.append('model', JSON.stringify({
@@ -241,6 +245,7 @@ function uploadFile(event) {
     category: category
   }));
 
+  //Chiamata HTTP alla funzione uploadFile in HomeController con metodo POST e dati del form come body 
   fetch('/uploadFile', {
     method: 'POST',
     body: formData
@@ -257,9 +262,6 @@ function uploadFile(event) {
   });
 }
 </script>
- 
-
-
 
 
 </body>

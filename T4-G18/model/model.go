@@ -6,17 +6,36 @@ import (
 )
 
 type Game struct {
-	CurrentRound int   `gorm:"default:1"`
-	ID           int64 `gorm:"primaryKey;autoIncrement"`
-	Name         string
-	Description  sql.NullString `gorm:"default:null"`
-	Difficulty   string
-	CreatedAt    time.Time  `gorm:"autoCreateTime"`
-	UpdatedAt    time.Time  `gorm:"autoUpdateTime"`
-	StartedAt    *time.Time `gorm:"default:null"`
-	ClosedAt     *time.Time `gorm:"default:null"`
-	Rounds       []Round    `gorm:"foreignKey:GameID;constraint:OnDelete:CASCADE;"`
-	Players      []Player   `gorm:"many2many:player_games;foreignKey:ID;joinForeignKey:GameID;References:AccountID;joinReferences:PlayerID"`
+	ID          int64          `gorm:"primaryKey;autoIncrement"`
+	Name        string         `gorm:"not null"`
+	Round       int            `gorm:"default:1"`
+	Class       string         `gorm:"not null"`
+	Description sql.NullString `gorm:"default:null"`
+	Difficulty  string         `gorm:"not null"`
+	CreatedAt   time.Time      `gorm:"autoCreateTime"`
+	UpdatedAt   time.Time      `gorm:"autoUpdateTime"`
+	StartedAt   *time.Time     `gorm:"default:null"`
+	ClosedAt    *time.Time     `gorm:"default:null"`
+	Players     []Player       `gorm:"many2many:player_games;foreignKey:ID;joinForeignKey:GameID;References:AccountID;joinReferences:PlayerID"`
+	Robot       int64          `gorm:"default:null"`
+	// Future implementazione di partite con più rounds
+	//Rounds       []Round    		`gorm:"foreignKey:GameID;constraint:OnDelete:CASCADE;"`
+	/*
+			type Game struct {
+			CurrentRound int   `gorm:"default:1"`
+			ID           int64 `gorm:"primaryKey;autoIncrement"`
+			Name         string
+			Description  sql.NullString `gorm:"default:null"`
+			Difficulty   string
+			CreatedAt    time.Time  `gorm:"autoCreateTime"`
+			UpdatedAt    time.Time  `gorm:"autoUpdateTime"`
+			StartedAt    *time.Time `gorm:"default:null"`
+			ClosedAt     *time.Time `gorm:"default:null"`
+			Rounds       []Round    `gorm:"foreignKey:GameID;constraint:OnDelete:CASCADE;"`
+			Players      []Player   `gorm:"many2many:player_games;foreignKey:ID;joinForeignKey:GameID;References:AccountID;joinReferences:PlayerID"`
+		}
+	*/
+
 }
 
 func (Game) TableName() string {
@@ -42,15 +61,55 @@ type Player struct {
 	UpdatedAt time.Time `gorm:"autoUpdateTime"`
 	Turns     []Turn    `gorm:"foreignKey:PlayerID;constraint:OnDelete:SET NULL;"`
 	Games     []Game    `gorm:"many2many:player_games;foreignKey:AccountID;joinForeignKey:PlayerID;"`
+	Wins 	  int64     `gorm:"default:0"` //aggiunto
 }
 
 func (Player) TableName() string {
 	return "players"
 }
 
+// Funzione per aggiornare il campo Wins per un giocatore specifico
+func UpdatePlayerWins(db *gorm.DB, playerID string) error {
+	var winsCount int64
+
+	// Calcola il numero di vittorie per il giocatore specifico
+	result := db.Model(&PlayerGame{}).Where("player_id = ? AND is_winner = ?", playerID, true).Count(&winsCount)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	// Aggiorna il campo Wins nella tabella Player con il numero di vittorie ottenuto
+	result = db.Model(&Player{}).Where("account_id = ?", playerID).Update("wins", winsCount)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+// Hook che si attiva ogni volta che si salva un record nella tabella PlayerGame
+func (pg *PlayerGame) AfterSave(tx *gorm.DB) (err error) {
+	if pg.IsWinner {
+		var winsCount int64
+
+		// Calcola il numero di vittorie per il giocatore specifico
+		result := tx.Model(&PlayerGame{}).Where("player_id = ? AND is_winner = ?", pg.PlayerID, true).Count(&winsCount)
+		if result.Error != nil {
+			return result.Error
+		}
+
+		// Aggiorna il campo Wins nella tabella Player con il numero di vittorie ottenuto
+		result = tx.Model(&Player{}).Where("account_id = ?", pg.PlayerID).Update("wins", winsCount)
+		if result.Error != nil {
+			return result.Error
+		}
+	}
+
+	return nil
+}
+
 type Round struct {
 	ID          int64      `gorm:"primaryKey;autoIncrement"`
-	Order       int        `gorm:"not null;default:1"`
 	StartedAt   *time.Time `gorm:"default:null"`
 	ClosedAt    *time.Time `gorm:"default:null"`
 	UpdatedAt   time.Time  `gorm:"autoUpdateTime"`
