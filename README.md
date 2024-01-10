@@ -1,8 +1,7 @@
-# Task 4 - Gruppo A3
-Componenti:
-- Valerio Domenico Conte - M63001606
-- Nike Di Giacomo - M63001641
-- Alessandro Falino - M63001658
+# Task 4 - Gruppo A5
+- Gianmarco Cascone
+- Giovanni Liguori
+- Francesco Riccio
 
 # GUIDA ALL'INSTALLAZIONE
 
