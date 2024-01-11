@@ -68,45 +68,6 @@ func (Player) TableName() string {
 	return "players"
 }
 
-// Funzione per aggiornare il campo Wins per un giocatore specifico
-func UpdatePlayerWins(db *gorm.DB, playerID string) error {
-	var winsCount int64
-
-	// Calcola il numero di vittorie per il giocatore specifico
-	result := db.Model(&PlayerGame{}).Where("player_id = ? AND is_winner = ?", playerID, true).Count(&winsCount)
-	if result.Error != nil {
-		return result.Error
-	}
-
-	// Aggiorna il campo Wins nella tabella Player con il numero di vittorie ottenuto
-	result = db.Model(&Player{}).Where("account_id = ?", playerID).Update("wins", winsCount)
-	if result.Error != nil {
-		return result.Error
-	}
-
-	return nil
-}
-
-// Hook che si attiva ogni volta che si salva un record nella tabella PlayerGame
-func (pg *PlayerGame) AfterSave(tx *gorm.DB) (err error) {
-	if pg.IsWinner {
-		var winsCount int64
-
-		// Calcola il numero di vittorie per il giocatore specifico
-		result := tx.Model(&PlayerGame{}).Where("player_id = ? AND is_winner = ?", pg.PlayerID, true).Count(&winsCount)
-		if result.Error != nil {
-			return result.Error
-		}
-
-		// Aggiorna il campo Wins nella tabella Player con il numero di vittorie ottenuto
-		result = tx.Model(&Player{}).Where("account_id = ?", pg.PlayerID).Update("wins", winsCount)
-		if result.Error != nil {
-			return result.Error
-		}
-	}
-
-	return nil
-}
 
 type Round struct {
 	ID          int64      `gorm:"primaryKey;autoIncrement"`
@@ -138,6 +99,38 @@ type Turn struct {
 
 func (Turn) TableName() string {
 	return "turns"
+}
+
+// Hook che si attiva ogni volta che si salva un record nella tabella PlayerGame
+func (pg *Turn) AfterSave(tx *gorm.DB) (err error) {
+	// Ottieni l'ID del giocatore dalla struttura PlayerGame
+	playerID := pg.PlayerID
+
+	// Ottieni il valore IsWinner dalla tabella Turn per il giocatore specifico
+	var isWinner bool
+	result := tx.Model(&Turn{}).Where("player_id = ? AND is_winner = ?", playerID, true).Select("is_winner").Scan(&isWinner)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	// Se isWinner è true, aggiorna il campo Wins nella tabella Player
+	if isWinner {
+		var winsCount int64
+
+		// Calcola il numero di vittorie per il giocatore specifico dalla tabella Turn
+		result := tx.Model(&Turn{}).Where("player_id = ? AND is_winner = ?", playerID, true).Count(&winsCount)
+		if result.Error != nil {
+			return result.Error
+		}
+
+		// Aggiorna il campo Wins nella tabella Player con il numero di vittorie ottenuto
+		result = tx.Model(&Player{}).Where("id = ?", playerID).Update("wins", winsCount)
+		if result.Error != nil {
+			return result.Error
+		}
+	}
+
+	return nil
 }
 
 type Metadata struct {
