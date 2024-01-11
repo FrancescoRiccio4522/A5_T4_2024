@@ -101,7 +101,7 @@ func (Turn) TableName() string {
 	return "turns"
 }
 
-// Hook che si attiva ogni volta che si salva un record nella tabella PlayerGame
+// Hook che si attiva ogni volta che si salva un record nella tabella Turn
 func (pg *Turn) AfterSave(tx *gorm.DB) (err error) {
 	// Ottieni l'ID del giocatore dalla struttura PlayerGame
 	playerID := pg.PlayerID
