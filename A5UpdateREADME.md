@@ -1,5 +1,4 @@
-# sad2024
-A5ProgettoSAD
+# A5-sad2024
 Aggiunte al progetto del team A3
  - funzioni:
    - AfterSave in \T4-G18\model\model.go
