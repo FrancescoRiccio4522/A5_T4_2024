@@ -3,6 +3,7 @@ package model
 import (
 	"database/sql"
 	"time"
+	"gorm.io/gorm"
 )
 
 type Game struct {
@@ -103,7 +104,7 @@ func (Turn) TableName() string {
 
 // Hook che si attiva ogni volta che si salva un record nella tabella Turn
 func (pg *Turn) AfterSave(tx *gorm.DB) (err error) {
-	// Ottieni l'ID del giocatore dalla struttura PlayerGame
+	// Ottieni l'ID del giocatore dalla struttura Turn
 	playerID := pg.PlayerID
 
 	// Ottieni il valore IsWinner dalla tabella Turn per il giocatore specifico
@@ -130,7 +131,7 @@ func (pg *Turn) AfterSave(tx *gorm.DB) (err error) {
 		}
 	}
 
-	return nil
+	return nil
 }
 
 type Metadata struct {
