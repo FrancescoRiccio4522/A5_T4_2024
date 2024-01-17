@@ -3,46 +3,25 @@ package model
 import (
 	"database/sql"
 	"time"
-	"gorm.io/gorm"
 )
 
 type Game struct {
-	ID          int64          `gorm:"primaryKey;autoIncrement"`
-	Name        string         `gorm:"not null"`
-	Round       int            `gorm:"default:1"`
-	Class       string         `gorm:"not null"`
-	Description sql.NullString `gorm:"default:null"`
-	Difficulty  string         `gorm:"not null"`
-	CreatedAt   time.Time      `gorm:"autoCreateTime"`
-	UpdatedAt   time.Time      `gorm:"autoUpdateTime"`
-	StartedAt   *time.Time     `gorm:"default:null"`
-	ClosedAt    *time.Time     `gorm:"default:null"`
-	Players     []Player       `gorm:"many2many:player_games;foreignKey:ID;joinForeignKey:GameID;References:AccountID;joinReferences:PlayerID"`
-	Robot       int64          `gorm:"default:null"`
-	// Future implementazione di partite con più rounds
-	//Rounds       []Round    		`gorm:"foreignKey:GameID;constraint:OnDelete:CASCADE;"`
-	/*
-			type Game struct {
-			CurrentRound int   `gorm:"default:1"`
-			ID           int64 `gorm:"primaryKey;autoIncrement"`
-			Name         string
-			Description  sql.NullString `gorm:"default:null"`
-			Difficulty   string
-			CreatedAt    time.Time  `gorm:"autoCreateTime"`
-			UpdatedAt    time.Time  `gorm:"autoUpdateTime"`
-			StartedAt    *time.Time `gorm:"default:null"`
-			ClosedAt     *time.Time `gorm:"default:null"`
-			Rounds       []Round    `gorm:"foreignKey:GameID;constraint:OnDelete:CASCADE;"`
-			Players      []Player   `gorm:"many2many:player_games;foreignKey:ID;joinForeignKey:GameID;References:AccountID;joinReferences:PlayerID"`
-		}
-	*/
-
+	CurrentRound int   `gorm:"default:1"`
+	ID           int64 `gorm:"primaryKey;autoIncrement"`
+	Name         string
+	Description  sql.NullString `gorm:"default:null"`
+	Difficulty   string
+	CreatedAt    time.Time  `gorm:"autoCreateTime"`
+	UpdatedAt    time.Time  `gorm:"autoUpdateTime"`
+	StartedAt    *time.Time `gorm:"default:null"`
+	ClosedAt     *time.Time `gorm:"default:null"`
+	Rounds       []Round    `gorm:"foreignKey:GameID;constraint:OnDelete:CASCADE;"`
+	Players      []Player   `gorm:"many2many:player_games;foreignKey:ID;joinForeignKey:GameID;References:AccountID;joinReferences:PlayerID"`
 }
 
 func (Game) TableName() string {
 	return "games"
 }
-
 type PlayerGame struct {
 	PlayerID  string    `gorm:"primaryKey"`
 	GameID    int64     `gorm:"primaryKey"`
@@ -96,6 +75,7 @@ type Turn struct {
 	IsWinner  bool       `gorm:"default:false"`
 	PlayerID  int64      `gorm:"index:idx_playerturn,unique;not null"`
 	RoundID   int64      `gorm:"index:idx_playerturn,unique;not null"`
+	RobotID   int64      `gorm:"default:null"`//aggiunto
 }
 
 func (Turn) TableName() string {
@@ -133,7 +113,7 @@ func (pg *Turn) AfterSaveWins(tx *gorm.DB) (err error) {
 
 	return nil
 }
-
+//Funzione che aggiorna IsWinner in PlayerGame
 func (t *Turn) AfterSaveIsWinner(tx *gorm.DB) (err error) {
 	// Ottieni l'ID del giocatore dalla struttura Turn
 	playerID := t.PlayerID

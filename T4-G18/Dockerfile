@@ -1,4 +1,3 @@
-# Stage 1: Build
 FROM golang:1.20.4-alpine as build
 
 WORKDIR /app
@@ -6,10 +5,9 @@ WORKDIR /app
 COPY vendor .
 COPY . .
 
-RUN CGO_ENABLED=0 go build -ldflags "-s -w" -o build/game-repository
+RUN CGO_ENABLED=0 go build -ldflags "-s -w"  -o build/game-repository
 
-# Stage 2: Final Image
-FROM alpine
+FROM alpine 
 
 WORKDIR /app
 
