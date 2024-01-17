@@ -113,44 +113,6 @@ func (pg *Turn) AfterSaveWins(tx *gorm.DB) (err error) {
 
 	return nil
 }
-//Funzione che aggiorna IsWinner in PlayerGame
-func (t *Turn) AfterSaveIsWinner(tx *gorm.DB) (err error) {
-	// Ottieni l'ID del giocatore dalla struttura Turn
-	playerID := t.PlayerID
-
-	// Ottieni il valore IsWinner dalla tabella Turn per il giocatore specifico
-	var isWinner bool
-	result := tx.Model(&Turn{}).Where("player_id = ? AND is_winner = ?", playerID, true).Select("is_winner").Scan(&isWinner)
-	if result.Error != nil {
-		return result.Error
-	}
-
-	// Se isWinner è true, aggiorna il campo Wins nella tabella Player
-	if isWinner {
-		var winsCount int64
-
-		// Calcola il numero di vittorie per il giocatore specifico dalla tabella Turn
-		result := tx.Model(&Turn{}).Where("player_id = ? AND is_winner = ?", playerID, true).Count(&winsCount)
-		if result.Error != nil {
-			return result.Error
-		}
-
-		// Aggiorna il campo Wins nella tabella Player con il numero di vittorie ottenuto
-		result = tx.Model(&Player{}).Where("id = ?", playerID).Update("wins", winsCount)
-		if result.Error != nil {
-			return result.Error
-		}
-
-		// Aggiorna il campo IsWinner nella tabella PlayerGame con il valore di IsWinner in Turn
-		result = tx.Model(&PlayerGame{}).Where("player_id = ? AND game_id = ?", playerID, t.GameID).Update("is_winner", true)
-		if result.Error != nil {
-			return result.Error
-		}
-	}
-
-	return nil
-}
-
 
 type Metadata struct {
 	ID        int64         `gorm:"primaryKey;autoIncrement"`
